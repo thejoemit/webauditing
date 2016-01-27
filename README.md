@@ -4,6 +4,7 @@ A readme for each script will be provided in this file appended to the list belo
 
 # urlgrabber
 Usage:
+
                 ./urlgrabber {IPAddress/TLD} {WebServicePort} {UserRequestedIndex}
 
 This script is pointed at a TLD or IP address and port in order to target a websocket.
