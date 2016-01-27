@@ -1,0 +1,31 @@
+#!/bin/bash
+# Project: Web Auditing
+# Title: URL Grabber
+# Author: the.joe.mit@gmail.com (0x766663B1)
+# Date: Jan 27th, 2015
+# Version: 0.1 ALPHA
+# Usage:  ./urlgrabber {IPAddress/TLD} {WebServicePort} {UserRequestedIndex}
+# Note:
+# This script is pointed at a TLD or IP address and port in order to target a websocket.
+# The script attempts a GET request and read the page looking for URLs and identified Unique entries.
+#
+# This work is licensed under a
+# Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+#
+telnetHTTPGet() {
+        { echo "GET ${weburi} HTTP/1.0"; echo ""; sleep 1; } | telnet $webaddr $webport > web.tmp
+}
+findURLS() {
+        cat web.tmp | grep -o -E 'href="([^"#]+)"' | cut -d'"' -f2 > urls_total.tmp
+        totalurlcount="$(cat urls_total.tmp | wc -l)"
+        sort urls.tmp | uniq -u > urls_uniq.tmp
+        uniqurlcount="$(cat urls_uniq.tmp | wc -l)"
+}
+webaddr=$1
+webport=$2
+weburi=$3
+telnetHTTPGet
+findURLS
+echo "[URL Puller] found ${totalurlcount} Individual URLs on Page!"
+echo "[URL Puller] found ${uniqurlcount} Unique URLs on Page!"
+rm web.tmp
