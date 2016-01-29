@@ -15,9 +15,6 @@
 telnetHTTPGet() {
         { echo "GET ${weburi} HTTP/1.0"; echo ""; sleep 1; } | telnet $webaddr $webport > web_get.tmp
 }
-telnetHTTPHead() {
-        { echo "HEAD ${weburi} HTTP/1.0"; echo ""; } | telnet $webaddr $webport > web_head.tmp
-}
 findURLS() {
         cat web_get.tmp | grep -o -E 'href="([^"#]+)"' | cut -d'"' -f2 > urls_total.tmp
         ip[$looper]="$(cat web_get.tmp | head -n 1 | cut -d' ' -f2 | cut -d. -f1-4)"
