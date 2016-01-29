@@ -4,7 +4,7 @@
 # Author: the.joe.mit@gmail.com (0x766663B1)
 # Date: Jan 27th, 2015
 # Version: 0.1 ALPHA
-# Usage:  ./urlgrabber {IPAddress/TLD} {WebServicePort} {UserRequestedIndex}
+# Usage:  ./httpinspect {IPAddress/TLD} {WebServicePort} {UserRequestedIndex}
 # Note:
 # This script is pointed at a TLD or IP address and port in order to target a websocket.
 # The script attempts a GET request and read the page looking for URLs and identified Unique entries.
@@ -13,19 +13,49 @@
 # Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 #
 telnetHTTPGet() {
-        { echo "GET ${weburi} HTTP/1.0"; echo ""; sleep 1; } | telnet $webaddr $webport > web.tmp
+        { echo "GET ${weburi} HTTP/1.0"; echo ""; sleep 1; } | telnet $webaddr $webport > web_get.tmp
+}
+telnetHTTPHead() {
+        { echo "HEAD ${weburi} HTTP/1.0"; echo ""; } | telnet $webaddr $webport > web_head.tmp
 }
 findURLS() {
-        cat web.tmp | grep -o -E 'href="([^"#]+)"' | cut -d'"' -f2 > urls_total.tmp
-        totalurlcount="$(cat urls_total.tmp | wc -l)"
-        sort urls.tmp | uniq -u > urls_uniq.tmp
-        uniqurlcount="$(cat urls_uniq.tmp | wc -l)"
+        cat web_get.tmp | grep -o -E 'href="([^"#]+)"' | cut -d'"' -f2 > urls_total.tmp
+        ip[$looper]="$(cat web_get.tmp | head -n 1 | cut -d' ' -f2 | cut -d. -f1-4)"
+        totalurlcount[$looper]="$(cat urls_total.tmp | wc -l)"
+        sort urls_total.tmp | uniq -u > urls_uniq.tmp
+        uniqurlcount[$looper]="$(cat urls_uniq.tmp | wc -l)"
+}
+findTLD() {
+        cat urls_uniq.tmp | awk -F"/" '{ print $3 }' | sort -s | uniq -u > urls_tlds.tmp
+        uniqtldcount[$looper]="$(cat urls_tlds.tmp | wc -l)"
+        subdomains[$looper]="$(cat urls_tlds.tmp | grep $webaddr | wc -l)"
+}
+printHeaderStats() {
+        echo "[httpinspect][+--->]      TopLevel-Domain: ${webaddr}"
+        echo "[httpinspect][|--->]      IPSocket: ${ip}:${webport}"
+        echo "[httpinspect][|--->]      Link Count: ${totalurlcount}"
+        echo "[httpinspect][|--->]      Unique Link Count: ${uniqurlcount}"
+        echo "[httpinspect][|--->]      Unique TLDs Count: ${uniqtldcount}"
+        echo "[httpinspect][|-+  ]      Unique Subdomains: ${subdomains}"
+}
+printSubdomains() {
+        roll=0
+        while [ $roll -lt $subdomains ]; do
+                selecttld[$roll]="$(cat urls_tlds.tmp | grep $webaddr | awk -v lst="$roll" 'NR>lst' | head -n1 )"
+                ip[$roll]="$(nslookup ${selecttld[${roll}]} | grep 'Address:' | tail -n1 | cut -d' ' -f2)"
+                echo "[httpinspect][  |->]  [${ip[${roll}]}]    ${selecttld[${roll}]}"
+                ((roll++))
+        done
 }
 webaddr=$1
 webport=$2
 weburi=$3
+looper=0
+if [ $(echo $1 | grep 'www' | wc -l) -gt 0 ]; then
+        webaddr="$(echo $webaddr | cut -d. -f2,3)"
+fi
 telnetHTTPGet
 findURLS
-echo "[URL Puller] found ${totalurlcount} Individual URLs on Page!"
-echo "[URL Puller] found ${uniqurlcount} Unique URLs on Page!"
-rm web.tmp
+findTLD
+printHeaderStats
+printSubdomains
