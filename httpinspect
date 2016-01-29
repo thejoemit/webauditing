@@ -2,7 +2,7 @@
 # Project: Web Auditing
 # Title: httpinspect
 # Author: the.joe.mit@gmail.com (0x766663B1)
-# Date: Jan 27th, 2015
+# Date: Jan 28th, 2015
 # Version: 0.2 ALPHA
 # Usage:  ./httpinspect {IPAddress/TLD} {WebServicePort} {UserRequestedIndex}
 # Note:
