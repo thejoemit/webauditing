@@ -3,11 +3,12 @@
 # Title: httpinspect
 # Author: the.joe.mit@gmail.com (0x766663B1)
 # Date: Jan 27th, 2015
-# Version: 0.1 ALPHA
+# Version: 0.2 ALPHA
 # Usage:  ./httpinspect {IPAddress/TLD} {WebServicePort} {UserRequestedIndex}
 # Note:
 # This script is pointed at a TLD or IP address and port in order to target a websocket.
 # The script attempts a GET request and read the page looking for URLs and identified Unique entries.
+# It will then proceed to list related subdomains from the unique list and pull IPv4s.
 #
 # This work is licensed under a
 # Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
